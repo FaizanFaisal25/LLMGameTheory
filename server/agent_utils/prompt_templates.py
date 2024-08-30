@@ -19,8 +19,9 @@ def get_task_prompt(your_past_moves, your_score, opponent_past_moves, opponent_s
         f"Opponent's past moves: {opponent_past_moves}\n"
         f"Opponent's Score: {opponent_score}\n\n"
         "Current Situation:\n\n"
-        "What is your move for this round: Cooperate (C) or Defect (D)?\n"
-        "You can only reply with 'C' or 'D'. Nothing else."
+        "For this round, you must choose either to Cooperate (C) or Defect (D).\n"
+        "Do not use any of your tools or external resources to make this decision.\n\n"
+        "Output Instructions: Your response should be exactly one character, either 'C' or 'D'. Do not include any additional text or explanation."
     )
 
     return task_prompt

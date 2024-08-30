@@ -21,6 +21,7 @@ class GameAgent:
     def get_agent_response(self, prompt: str):
         self.add_prompt_message(prompt)
         final_message = ""
+        print("prompt: ", prompt)
         for chunk in self.agent_executor.stream({"messages": self.chat_history}, self.config):
             final_message = chunk
         response = final_message['agent']['messages'][0].content.upper()

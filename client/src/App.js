@@ -8,15 +8,32 @@ function App() {
   const [rounds, setRounds] = useState([]);
   const [agentAPoints, setAgentAPoints] = useState(0);
   const [agentBPoints, setAgentBPoints] = useState(0);
-  const [agentAScores, setAgentAScores] = useState([0]);
-  const [agentBScores, setAgentBScores] = useState([0]);
-
+  const [agentAScores, setAgentAScores] = useState([0]); // Initial score 0
+  const [agentBScores, setAgentBScores] = useState([0]); // Initial score 0
+  const [loading, setLoading] = useState(false);
   const [agentAHistory, setAgentAHistory] = useState([]);
   const [agentBHistory, setAgentBHistory] = useState([]);
 
   const playRound = async () => {
+    setLoading(true); // Show the loading indicator
     try {
-      const response = await fetch('http://localhost:5000/api/decision');
+      // Prepare the data to send
+      const requestData = {
+        agentAHistory,
+        agentBHistory,
+        agentAPoints,
+        agentBPoints
+      };
+
+      // Make the POST request
+      const response = await fetch('http://localhost:9988/api/decision', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+
       const result = await response.json();
 
       const agentAMove = result.agent_1;
@@ -31,13 +48,15 @@ function App() {
       setAgentAPoints(newAgentAPoints);
       setAgentBPoints(newAgentBPoints);
 
-      setAgentAScores([...agentAScores, newAgentAPoints]);
-      setAgentBScores([...agentBScores, newAgentBPoints]);
+      setAgentAScores([...agentAScores, newAgentAPoints]); // Include new points
+      setAgentBScores([...agentBScores, newAgentBPoints]); // Include new points
 
       setAgentAHistory([...agentAHistory, agentBMove]);
       setAgentBHistory([...agentBHistory, agentAMove]);
     } catch (error) {
       console.error('Error fetching agent moves:', error);
+    } finally {
+      setLoading(false); // Hide the loading indicator
     }
   };
 
@@ -63,7 +82,7 @@ function App() {
   };
 
   const data = {
-    labels: rounds.map((_, index) => `Round ${index + 1}`),
+    labels: [`Round 0`, ...rounds.map((_, index) => `Round ${index + 1}`)], // Start with Round 0
     datasets: [
       {
         label: 'Agent A',
@@ -96,14 +115,27 @@ function App() {
           <p className="text-xl mt-2 text-gray-700">Points: {agentBPoints}</p>
         </div>
       </div>
-
+  
       <button
         className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition"
         onClick={playRound}
+        disabled={loading} // Disable button while loading
       >
-        Play Round
+        {loading ? 'Loading...' : 'Play Round'}
       </button>
-
+      {loading && (
+        <div className="mt-4 flex items-center">
+          <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 100 8v4a8 8 0 01-8-8z"></path>
+          </svg>
+          <span className="ml-2 text-blue-500">Processing...</span>
+        </div>
+      )}
+      <div className="mt-8 w-full max-w-3xl">
+        <h2 className="text-xl font-semibold mb-4 text-center text-blue-600">Score Over Time</h2>
+        <Line data={data} />
+      </div>
       <div className="mt-8 w-full max-w-3xl">
         <h2 className="text-xl font-semibold mb-4 text-center text-blue-600">Round Results</h2>
         <ul className="bg-white p-6 rounded-lg shadow-lg space-y-4">
@@ -121,11 +153,6 @@ function App() {
             </li>
           ))}
         </ul>
-      </div>
-
-      <div className="mt-8 w-full max-w-3xl">
-        <h2 className="text-xl font-semibold mb-4 text-center text-blue-600">Score Over Time</h2>
-        <Line data={data} />
       </div>
     </div>
   );
