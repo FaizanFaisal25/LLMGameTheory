@@ -75,7 +75,7 @@ You will need the following software installed on your machine:
    Navigate to the `server` folder and run the Flask server:
    ```sh
    cd ../server
-   python flask_server.py
+   python server.py
    ```
 
 2. **Start the frontend**
